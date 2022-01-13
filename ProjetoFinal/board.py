@@ -40,5 +40,8 @@ class Board:
     def get_board(self):
         return self.game_grid
 
-    def draw_board():
-        pass
+    def draw_board(self, screen):
+        for row in range(0, len(self.game_grid)):
+            for column in self.game_grid[row]:
+                column[1].render(screen)
+        

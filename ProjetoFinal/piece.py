@@ -9,7 +9,8 @@ class Piece:
         self.sprite = None
     
     def render(self, screen):
-        pass
+        screen.blit(self.sprite,
+                        (self.position[0], self.position[1]))
     
     def move():
         pass

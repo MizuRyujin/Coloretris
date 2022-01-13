@@ -4,13 +4,6 @@ import piece
 import board
 
 
-class Cell:
-    screen_position = (0, 0)
-
-    def __init__(self, position):
-        self.screen_position = position
-
-
 # Initialize pygame
 pygame.init()
 
@@ -60,10 +53,7 @@ while True:
 
     # Clears the screen to black
     screen.fill((70, 70, 70))
-    for row in range(0, len(board.game_grid)):
-        for column in board.game_grid[row]:
-            screen.blit(column[1].sprite,
-                        (column[0][0], column[0][1]))
+    board.draw_board(screen)
 
     # Swaps the back and front buffer, effectively displaying what we rendered
     pygame.display.flip()
