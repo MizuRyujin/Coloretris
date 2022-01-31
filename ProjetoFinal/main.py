@@ -32,6 +32,8 @@ class Board:
             for x, column in enumerate(row):            
                 if(y, x) == (piece.pos_y, piece.pos_x):
                     self.game_grid[y][x] = piece.color
+                else:
+                    self.game_grid[y][x] = PieceColor.NONE
             
 
 class Piece:
@@ -105,19 +107,20 @@ def gameloop():
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    current_piece.x -= 1
-                    if not valid_space(current_piece, board):
-                        current_piece.x += 1
+                    current_piece.pos_x -= 1
+                    if current_piece.pos_x < 0:
+                        current_piece.pos_x += 1
+
                 elif event.key == pygame.K_RIGHT:
-                    current_piece.x += 1
-                    if not valid_space(current_piece, board):
-                        current_piece.x -= 1
+                    current_piece.pos_x += 1
+                    if current_piece.pos_x > board.grid_columns - 1:
+                        current_piece.pos_x -= 1
  
                 if event.key == pygame.K_DOWN:
                     # move shape down
-                    current_piece.y += 1
-                    if not valid_space(current_piece, board):
-                        current_piece.y -= 1
+                    current_piece.pos_y += 1
+                    if current_piece.pos_y > board.grid_rows - 1:
+                        current_piece.pos_y -= 1
         # Display menu scene
         # If Start option was selected load game scene
 
