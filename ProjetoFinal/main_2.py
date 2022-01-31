@@ -146,6 +146,8 @@ def gameloop():
 
         # If the next piece is on a occupied space in the first row, lose
         if check_lost(board, (current_piece.pos_y, current_piece.pos_x)):
+            draw_middle_text(screen, "YOU LOST !!!", (255, 255, 255))
+            pygame.time.delay(5000)
             is_running = False
 
     # When gameloop is terminated return to main menu
@@ -160,7 +162,7 @@ def main_menu():
     label = font_128.render("Coloretris!", False, (255,255,255))
     screen.blit(label, (top_left_x + board_width / 2 - (label.get_width() / 2), top_left_y / 2 - label.get_height() / 2))
     while run_menu:
-        draw_main_menu_text(screen, 'Press Any Key To Play', (255,255,255))
+        draw_middle_text(screen, 'Press Any Key To Play', (255,255,255))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run_menu = False
@@ -288,7 +290,7 @@ def draw_grid(board, screen):
             pygame.draw.line(screen, (128, 128, 128), s2, e2)
 
 
-def draw_main_menu_text(surface, text, color):
+def draw_middle_text(surface, text, color):
     label = font_42.render(text, False, color)
     surface.blit(label, (top_left_x + board_width / 2 - (label.get_width() / 2), top_left_y + board_height / 2 - label.get_height() / 2))
 
