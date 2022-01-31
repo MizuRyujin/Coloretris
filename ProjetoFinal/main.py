@@ -1,5 +1,4 @@
 import random
-from turtle import color, update
 import pygame
 
 from enum import Enum
@@ -21,20 +20,23 @@ class Board:
         self.grid_rows = grid_rows
         self.cell_size = cell_size
         self.board_origin = origin
+        self.fixed_positions = []
 
     def create_board(self):
         self.game_grid = [[PieceColor.NONE for x in range(
             self.grid_columns)] for y in range(self.grid_rows)]
 
     def update_board(self, piece):
-        new_grid = []
         for y, row in enumerate(self.game_grid):
-            for x, column in enumerate(row):            
-                if(y, x) == (piece.pos_y, piece.pos_x):
+            for x in range(len(row)):            
+                piece_pos = (piece.pos_y, piece.pos_x)
+                if(y, x) == piece_pos:
                     self.game_grid[y][x] = piece.color
-                else:
+                elif self.fixed_positions.count(piece_pos) == 0 and self.fixed_positions.count((y, x)) == 0:
                     self.game_grid[y][x] = PieceColor.NONE
-            
+
+    def add_fixed_piece(self, position):
+        self.fixed_positions.append(position)
 
 class Piece:
 
@@ -90,16 +92,26 @@ def gameloop():
     is_running = True
     should_get_new_piece = False
     clock = pygame.time.Clock()
-    fall_time = 0
-    last_time = pygame.time.get_ticks() / 1000
+    
+    fall_speed = 1
+    fall_time = clock.get_time() / 1000
 
     board.create_board()
 
     current_piece = get_new_piece()
 
+    # Commence the actual game loop
     while is_running:
         clock.tick(60)
-        elapsed_time = (pygame.time.get_ticks() - last_time)
+        fall_time += clock.get_time() / 1000
+
+        if fall_time >= fall_speed:
+            fall_time = 0
+            current_piece.pos_y += 1
+            if not valid_space(current_piece, board) and current_piece.pos_y > 0:
+                current_piece.pos_y -= 1
+                board.add_fixed_piece((current_piece.pos_y, current_piece.pos_x))
+                should_get_new_piece = True
 
         for event in pygame.event.get():
             if (event.type == pygame.QUIT):
@@ -121,26 +133,29 @@ def gameloop():
                     current_piece.pos_y += 1
                     if not valid_space(current_piece, board):
                         current_piece.pos_y -= 1
-        # Display menu scene
-        # If Start option was selected load game scene
-
-        # Display game scene
-        # Start game loop
 
         # Update board with new piece position
         board.update_board(current_piece)
         
+        # If the current piece hit something
+        if should_get_new_piece:
+            board.add_fixed_piece((current_piece.pos_y, current_piece.pos_x))
+            current_piece = get_new_piece()
+            should_get_new_piece = False
+
         draw_board(board, screen)
 
         # Swaps the back and front buffer, effectively displaying what we rendered
         pygame.display.flip()
-    
+
+        check_lost()    
     # When gameloop is terminated return to main menu
     main_menu()
 
 
 def main_menu():
-
+    # Display menu scene
+    # If Start option was selected load game scene
     for event in pygame.event.get():
         if (event.type == pygame.QUIT):
             pygame.display.quit()
@@ -158,7 +173,7 @@ def get_new_piece():
 def get_random_color():
     color = random.choice(list(PieceColor)[1:]) # Force random choice to disregard NONE value
     return color
-
+# Method to check if a piece is moving to a valid space
 def valid_space(piece, board):
     piece_pos = (piece.pos_x, piece.pos_y)
     free_pos = []
@@ -171,6 +186,8 @@ def valid_space(piece, board):
     else:  
         return False
 
+def check_lost():
+    pass
 
 # Render methods
 def draw_grid(board, screen):
