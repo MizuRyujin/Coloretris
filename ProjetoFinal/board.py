@@ -1,47 +1,26 @@
-import pygame
-import piece
-
+from piece_color import PieceColor
 
 class Board:
-    grid_size = (0, 0)
-    cell_size = (0, 0)
-    game_grid = []
-    board_origin = (0, 0)
 
-    def __init__(self, grid_size, cell_size, origin) -> None:
-        self.grid_size = grid_size
+    def __init__(self, grid_columns, grid_rows, cell_size, origin) -> None:
+        self.grid_columns = grid_columns
+        self.grid_rows = grid_rows
         self.cell_size = cell_size
         self.board_origin = origin
+        self.fixed_positions = []
 
-    def create_board(self, screen_res_with_offset):
-        y_screen_pos = self.board_origin[1]
-        for y in range(0, self.grid_size[0]):
-            aux = []
-            x_screen_pos = self.board_origin[0]
-            for x in range(0, self.grid_size[1]):
-                aux.append([(x_screen_pos, y_screen_pos), None])
-                x_screen_pos = x_screen_pos + self.cell_size[0] if not x_screen_pos + \
-                    self.cell_size[0] > screen_res_with_offset[0] else self.board_origin[0]
+    def create_board(self):
+        self.game_grid = [[PieceColor.NONE for i in range(
+            self.grid_columns)] for i in range(self.grid_rows)]
 
-            self.game_grid.append(aux)
-            y_screen_pos = y_screen_pos + self.cell_size[1] if not y_screen_pos + \
-                self.cell_size[1] > screen_res_with_offset[1] else self.board_origin[1]
+    def update_board(self, piece):
+        for y, row in enumerate(self.game_grid):
+            for x in range(len(row)):            
+                piece_pos = (piece.pos_y, piece.pos_x)
+                if(y, x) == piece_pos:
+                    self.game_grid[y][x] = piece.color
+                elif self.fixed_positions.count(piece_pos) == 0 and self.fixed_positions.count((y, x)) == 0:
+                    self.game_grid[y][x] = PieceColor.NONE
 
-    def add_piece(self, piece):
-        for row in range(0, len(self.game_grid)):
-            x = 0
-            for column in self.game_grid[row]:
-                column.pop()
-                piece.position = column[0]
-                piece.grid_position = (x, row)
-                column.append(piece)
-                x += 1
-
-    def get_board(self):
-        return self.game_grid
-
-    def draw_board(self, screen):
-        for row in range(0, len(self.game_grid)):
-            for column in self.game_grid[row]:
-                column[1].render(screen)
-        
+    def add_fixed_piece(self, position):
+        self.fixed_positions.append(position)
