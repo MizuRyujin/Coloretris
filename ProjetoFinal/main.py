@@ -87,7 +87,8 @@ def gameloop():
     global board
     global screen
 
-    run_game = True
+    is_running = True
+    should_get_new_piece = False
     clock = pygame.time.Clock()
     fall_time = 0
     last_time = pygame.time.get_ticks() / 1000
@@ -95,31 +96,30 @@ def gameloop():
     board.create_board()
 
     current_piece = get_new_piece()
-    current_piece.pos_x = board_columns // 2
 
-    while run_game:
+    while is_running:
         clock.tick(60)
         elapsed_time = (pygame.time.get_ticks() - last_time)
 
         for event in pygame.event.get():
             if (event.type == pygame.QUIT):
-                run_game = False
+                is_running = False
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     current_piece.pos_x -= 1
-                    if current_piece.pos_x < 0:
+                    if not valid_space(current_piece, board):
                         current_piece.pos_x += 1
 
                 elif event.key == pygame.K_RIGHT:
                     current_piece.pos_x += 1
-                    if current_piece.pos_x > board.grid_columns - 1:
+                    if not valid_space(current_piece, board):
                         current_piece.pos_x -= 1
  
                 if event.key == pygame.K_DOWN:
                     # move shape down
                     current_piece.pos_y += 1
-                    if current_piece.pos_y > board.grid_rows - 1:
+                    if not valid_space(current_piece, board):
                         current_piece.pos_y -= 1
         # Display menu scene
         # If Start option was selected load game scene
@@ -148,14 +148,28 @@ def main_menu():
 
 
 # Gameloop methods
+# Gets a new piece of random color and set it to the center of the grid
 def get_new_piece():
-    return Piece(get_random_color())
+    piece = Piece(get_random_color())
+    piece.pos_x = board_columns // 2 
+    return piece
 
+# Gets a random color from color enum
 def get_random_color():
-    # Force random choice to disregard NONE value
-    color = random.choice(list(PieceColor)[1:])
+    color = random.choice(list(PieceColor)[1:]) # Force random choice to disregard NONE value
     return color
 
+def valid_space(piece, board):
+    piece_pos = (piece.pos_x, piece.pos_y)
+    free_pos = []
+    for y, row in enumerate(board.game_grid):
+        for x, column in enumerate(row):
+            if column == PieceColor.NONE:
+                free_pos.append((x,y)) # save occupied pos to compare after
+    if free_pos.count(piece_pos) > 0:
+        return True
+    else:  
+        return False
 
 
 # Render methods
