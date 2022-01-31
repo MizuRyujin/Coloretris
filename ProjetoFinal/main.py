@@ -137,7 +137,7 @@ def gameloop():
         # Update board with new piece position
         board.update_board(current_piece)
         
-        # If the current piece hit something
+        # If the current piece has hit something
         if should_get_new_piece:
             board.add_fixed_piece((current_piece.pos_y, current_piece.pos_x))
             current_piece = get_new_piece()
@@ -148,18 +148,24 @@ def gameloop():
         # Swaps the back and front buffer, effectively displaying what we rendered
         pygame.display.flip()
 
-        check_lost()    
+        # If the next piece is on a occupied space in the first row, lose
+        if check_lost(board, (current_piece.pos_y, current_piece.pos_x)):
+            is_running = False
+
     # When gameloop is terminated return to main menu
-    main_menu()
+    #main_menu()
 
 
 def main_menu():
     # Display menu scene
     # If Start option was selected load game scene
-    for event in pygame.event.get():
-        if (event.type == pygame.QUIT):
-            pygame.display.quit()
-            quit()
+    run_menu = True
+    while run_menu:
+        for event in pygame.event.get():
+            if (event.type == pygame.QUIT):
+                run_menu = False
+                pygame.display.quit()
+                quit()
 
 
 # Gameloop methods
@@ -173,6 +179,7 @@ def get_new_piece():
 def get_random_color():
     color = random.choice(list(PieceColor)[1:]) # Force random choice to disregard NONE value
     return color
+
 # Method to check if a piece is moving to a valid space
 def valid_space(piece, board):
     piece_pos = (piece.pos_x, piece.pos_y)
@@ -186,8 +193,10 @@ def valid_space(piece, board):
     else:  
         return False
 
-def check_lost():
-    pass
+def check_lost(board, pos):
+    if board.fixed_positions.count(pos):
+        return True
+    return False
 
 # Render methods
 def draw_grid(board, screen):
@@ -198,7 +207,7 @@ def draw_grid(board, screen):
         s1 = (sx, sy + i * board.cell_size)
         e1 = (sx + board_width, sy + i * board.cell_size)
         pygame.draw.line(screen, (128, 128, 128), s1, e1)  # horizontal lines
-        for j in range(board.grid_columns + 1):
+        for j in range(board.grid_columns):
             s2 = (sx + j * board.cell_size, sy)
             e2 = (sx + j * board.cell_size, sy + board_height)
             pygame.draw.line(screen, (128, 128, 128), s2, e2)
@@ -216,7 +225,8 @@ def draw_board(board, screen):
                 pygame.draw.rect(screen, color_dict.get("green"), (top_left_x + x * board.cell_size, top_left_y + y * board.cell_size, board.cell_size, board.cell_size), 0)
             if column == PieceColor.BLUE:
                 pygame.draw.rect(screen, color_dict.get("blue"), (top_left_x + x * board.cell_size, top_left_y + y * board.cell_size, board.cell_size, board.cell_size), 0)
-
+    # Draw border
+    pygame.draw.rect(screen, (255, 0, 0), (top_left_x, top_left_y, board_width, board_height), 5)
 
 
 # Main methods
