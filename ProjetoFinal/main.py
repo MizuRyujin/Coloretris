@@ -7,11 +7,12 @@ import board
 # Initialize pygame
 pygame.init()
 
+# GLOBAL VARS
 screen_res = (1280, 720)
 screen_res_with_offset = (screen_res[0] - 100, screen_res[1] - 100)
 screen = pygame.display.set_mode(screen_res)
 
-# Retrieve the ammount of time since pygame.init() was called
+# Retrieve the amount of time since pygame.init() was called
 last_time = pygame.time.get_ticks() / 1000
 
 # Initialize Assets -> path: "ProjetoFinal/Assets/<AssetName>"
