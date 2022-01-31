@@ -2,9 +2,9 @@ import pygame
 
 class Piece(object):
  
-    def __init__(self, column, row, color):
-        self.x = column
-        self.y = row
+    def __init__(self, color):
+        self.x = 0
+        self.y = 0
         self.color = color
     
     def render(self, screen):

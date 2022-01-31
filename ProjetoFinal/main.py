@@ -1,5 +1,4 @@
 import pygame
-
 import piece
 import board
 
@@ -8,37 +7,45 @@ import board
 pygame.init()
 
 # GLOBAL VARS
-screen_res = (1280, 720)
-screen_res_with_offset = (screen_res[0] - 100, screen_res[1] - 100)
+board_rows = 10
+board_columns = 7
+screen_width = 1280
+screen_height = 720
+screen_res = (screen_width, screen_height)
+board_width = screen_width / board_columns
+board_height = screen_height / board_rows
+cell_size = 100
+
 screen = pygame.display.set_mode(screen_res)
 
-# Retrieve the amount of time since pygame.init() was called
-last_time = pygame.time.get_ticks() / 1000
 
 # Initialize Assets -> path: "ProjetoFinal/Assets/<AssetName>"
 font = pygame.freetype.Font("ProjetoFinal/Assets/NotoSans-Regular.ttf", 16)
-piece_sprite = pygame.image.load("ProjetoFinal/Assets/EggBlue.png")
+sprite = pygame.image.load("ProjetoFinal/Assets/EggBlue.png")
 
 # Reduce piece scale
-sprite_size = piece_sprite.get_size()
-sprite_scale = (sprite_size[0] / screen_res_with_offset[0],
-                sprite_size[1] / screen_res_with_offset[1])
-piece_sprite = pygame.transform.scale(piece_sprite, (piece_sprite.get_size()[0] - piece_sprite.get_size(
-)[0] * sprite_scale[0], piece_sprite.get_size()[1] - piece_sprite.get_size()[1] * sprite_scale[1]))
+# sprite_size = sprite.get_size()
+# sprite_scale = (sprite_size[0] / board_width,
+#                 sprite_size[1] / board_height)
+# sprite = pygame.transform.scale(sprite, (sprite.get_size()[0] - sprite.get_size(
+# )[0] * sprite_scale[0], sprite.get_size()[1] - sprite.get_size()[1] * sprite_scale[1]))
 
 # Create "prefab" of game piece
-piece_prefab = piece.Piece()
-piece_prefab.sprite = piece_sprite
+piece_prefab = piece.Piece(0)
+piece_prefab.sprite = sprite
 
 # Initialize grid (screen size / sprite size)
 board_screen_pos = (
-    (screen_res_with_offset[1] / 3) * 1.5, screen_res_with_offset[1] / 5)
+    (board_width / 3) * 1.5, board_height / 5)
 
-board = board.Board((10, 7), (sprite_size[0] + 10, sprite_size[1] + 10), board_screen_pos)
-board.fill_board(screen_res_with_offset)
+board = board.Board(
+    (10, 7), (boa + 10, cell_size + 10), board_screen_pos)
+board.create_board(board_width, board_height)
 board.add_piece(piece_prefab)
 
-# Initialize scene collection
+
+# Retrieve the amount of time since pygame.init() was called
+last_time = pygame.time.get_ticks() / 1000
 
 while True:
     # Process system events (Put this in a input manager)

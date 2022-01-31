@@ -13,7 +13,7 @@ class Board:
         self.cell_size = cell_size
         self.board_origin = origin
 
-    def fill_board(self, screen_res_with_offset):
+    def create_board(self, screen_res_with_offset):
         y_screen_pos = self.board_origin[1]
         for y in range(0, self.grid_size[0]):
             aux = []
