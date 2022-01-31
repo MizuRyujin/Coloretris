@@ -34,8 +34,6 @@ class Board:
                     self.game_grid[y][x] = piece.color
             
 
-
-
 class Piece:
 
     def __init__(self, color):
@@ -87,35 +85,66 @@ def gameloop():
     global board
     global screen
 
+    run_game = True
     clock = pygame.time.Clock()
+    fall_time = 0
     last_time = pygame.time.get_ticks() / 1000
+
     board.create_board()
-    
+
     current_piece = get_new_piece()
-    while True:
+    current_piece.pos_x = board_columns // 2
+
+    while run_game:
         clock.tick(60)
-        # Process system events (Put this in a input manager)
+        elapsed_time = (pygame.time.get_ticks() - last_time)
+
         for event in pygame.event.get():
             if (event.type == pygame.QUIT):
-                exit()
-        elapsed_time = (pygame.time.get_ticks() - last_time)
+                run_game = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    current_piece.x -= 1
+                    if not valid_space(current_piece, board):
+                        current_piece.x += 1
+                elif event.key == pygame.K_RIGHT:
+                    current_piece.x += 1
+                    if not valid_space(current_piece, board):
+                        current_piece.x -= 1
+ 
+                if event.key == pygame.K_DOWN:
+                    # move shape down
+                    current_piece.y += 1
+                    if not valid_space(current_piece, board):
+                        current_piece.y -= 1
         # Display menu scene
         # If Start option was selected load game scene
 
         # Display game scene
         # Start game loop
 
-        # Clears the screen to black
+        # Update board with new piece position
         board.update_board(current_piece)
+        
         draw_board(board, screen)
 
         # Swaps the back and front buffer, effectively displaying what we rendered
         pygame.display.flip()
+    
+    # When gameloop is terminated return to main menu
+    main_menu()
 
 
 def main_menu():
-    pass
 
+    for event in pygame.event.get():
+        if (event.type == pygame.QUIT):
+            pygame.display.quit()
+            quit()
+
+
+# Gameloop methods
 def get_new_piece():
     return Piece(get_random_color())
 
@@ -125,6 +154,8 @@ def get_random_color():
     return color
 
 
+
+# Render methods
 def draw_grid(board, screen):
     # This function draws the grey grid lines that we see
     sx = top_left_x
@@ -153,5 +184,7 @@ def draw_board(board, screen):
                 pygame.draw.rect(screen, color_dict.get("blue"), (top_left_x + x * board.cell_size, top_left_y + y * board.cell_size, board.cell_size, board.cell_size), 0)
 
 
+
+# Main methods
 
 gameloop()
