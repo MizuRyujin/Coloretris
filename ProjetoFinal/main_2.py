@@ -63,7 +63,7 @@ board_height = cell_size * board_rows
 
 top_left_x = (screen_width - board_width) // 2
 top_left_y = screen_height - board_height
-board = Board(board_columns, board_rows, cell_size, (top_left_x, top_left_y))
+
 
 # Initialize Assets -> path: "ProjetoFinal/Assets/<AssetName>"
 font_16 = pygame.font.SysFont("ProjetoFinal/Assets/NotoSans-Regular.ttf", 16)
@@ -80,13 +80,13 @@ color_dict = {
 
 
 def gameloop():
-    global board
     global screen
-
+    
     is_running = True
     should_get_new_piece = False
     clock = pygame.time.Clock()
-
+    board = Board(board_columns, board_rows, cell_size, (top_left_x, top_left_y))
+    
     fall_speed = 1
     fall_time = clock.get_time() / 1000
 
@@ -147,6 +147,7 @@ def gameloop():
         # If the next piece is on a occupied space in the first row, lose
         if check_lost(board, (current_piece.pos_y, current_piece.pos_x)):
             draw_middle_text(screen, "YOU LOST !!!", (255, 255, 255))
+            pygame.display.update()
             pygame.time.delay(5000)
             is_running = False
 
