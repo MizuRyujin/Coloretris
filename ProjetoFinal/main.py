@@ -1,54 +1,9 @@
-import enum
 import random
 import pygame
 
-from enum import Enum
-
-## CLASSES SHOULD BE MOVED TO INDIVIDUAL FILES !! ##
-
-
-class PieceColor(Enum):
-    NONE = 0
-    RED = 1
-    GREEN = 2
-    BLUE = 3
-
-
-class Board:
-
-    def __init__(self, grid_columns, grid_rows, cell_size, origin) -> None:
-        self.grid_columns = grid_columns
-        self.grid_rows = grid_rows
-        self.cell_size = cell_size
-        self.board_origin = origin
-        self.fixed_positions = []
-
-    def create_board(self):
-        self.game_grid = [[PieceColor.NONE for x in range(
-            self.grid_columns)] for y in range(self.grid_rows)]
-
-    def update_board(self, piece):
-        for y, row in enumerate(self.game_grid):
-            for x in range(len(row)):
-                piece_pos = (piece.pos_y, piece.pos_x)
-                if(y, x) == piece_pos:
-                    self.game_grid[y][x] = piece.color
-                elif self.fixed_positions.count(piece_pos) == 0 and self.fixed_positions.count((y, x)) == 0:
-                    self.game_grid[y][x] = PieceColor.NONE
-
-    def add_fixed_piece(self, position):
-        self.fixed_positions.append(position)
-
-
-class Piece:
-
-    def __init__(self, color):
-        self.name = "piece"
-        self.pos_x = 0
-        self.pos_y = 0
-        self.sprite = None
-        self.color = color
-
+from piece_color import PieceColor
+from board import Board
+from piece import Piece
 
 # Initialize pygame
 pygame.init()
@@ -74,9 +29,7 @@ top_left_y = screen_height - board_height
 board = Board(board_columns, board_rows, cell_size, (top_left_x, top_left_y))
 
 # Initialize Assets -> path: "ProjetoFinal/Assets/<AssetName>"
-font = pygame.freetype.Font("ProjetoFinal/Assets/NotoSans-Regular.ttf", 16)
-sprite = pygame.image.load("ProjetoFinal/Assets/EggBlue.png")
-sprite.convert()
+font = pygame.font.SysFont("ProjetoFinal/Assets/NotoSans-Regular.ttf", 16)
 
 # Color dictionary
 color_dict = {
@@ -112,13 +65,12 @@ def gameloop():
             current_piece.pos_y += 1
             if not valid_space(current_piece, board) and current_piece.pos_y > 0:
                 current_piece.pos_y -= 1
-                board.add_fixed_piece(
-                    (current_piece.pos_y, current_piece.pos_x))
                 should_get_new_piece = True
 
         for event in pygame.event.get():
             if (event.type == pygame.QUIT):
                 is_running = False
+                pygame.display.quit()
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
@@ -166,13 +118,16 @@ def main_menu():
     run_menu = True
     screen.fill(color_dict.get("base"))
     while run_menu:
+        #draw_main_menu_text(screen, 'Press Any Key To Play', (60,60), (255,255,255))
         for event in pygame.event.get():
-            if (event.type == pygame.QUIT):
+            if event.type == pygame.QUIT:
                 run_menu = False
                 pygame.display.quit()
-                quit()
-    
-    pygame.display.flip()
+
+            if event.type == pygame.KEYDOWN:
+                gameloop()
+
+        pygame.display.flip()
 
 
 # Gameloop methods
@@ -209,13 +164,51 @@ def check_lost(board, pos):
 
 # Method to clear all cells with more than 3 neighbors of the same colour
 def clear_same_colour_cells(board):
-    for y in range(len(board.game_grid)-1, -1, -1):
-        row = board.game_grid[y]
-        for x in range(len(row)):
-            pass
-        # y_pos = y
-        # for x, column in enumerate(row):
-        #     x_pos = x
+    sorted_fixed_pos = board.fixed_positions.copy()
+    if len(sorted_fixed_pos) > 1:
+        for i in range(0, len(sorted_fixed_pos)):
+            for j in range(i + 1, len(sorted_fixed_pos)):
+                if sorted_fixed_pos[i][0] < sorted_fixed_pos[j][0]:
+                    sorted_fixed_pos[i], sorted_fixed_pos[j] = sorted_fixed_pos[j], sorted_fixed_pos[i]  
+
+        to_remove = []
+        for n in range(len(sorted_fixed_pos)):
+            pos = sorted_fixed_pos[n]
+            if to_remove.count(pos) == 0:
+                if pos[0] - 2 >= 0:
+                    if board.game_grid[pos[0]][pos[1]] == board.game_grid[pos[0] - 1][pos[1]]:
+                        if board.game_grid[pos[0] - 1][pos[1]] == board.game_grid[pos[0] - 2][pos[1]]:
+                            board.game_grid[pos[0]][pos[1]] = PieceColor.NONE
+                            board.game_grid[pos[0] - 1][pos[1]] = PieceColor.NONE
+                            board.game_grid[pos[0] - 2][pos[1]] = PieceColor.NONE
+                            to_remove.append(pos)
+                            to_remove.append((pos[0] - 1, pos[1]))
+                            to_remove.append((pos[0] - 2, pos[1]))
+
+                if pos[1] - 1 >= 0 and pos[1] + 1 < board_columns:
+                    if board.game_grid[pos[0]][pos[1]] == board.game_grid[pos[0]][pos[1] + 1]:
+                        if board.game_grid[pos[0]][pos[1] - 1] == board.game_grid[pos[0]][pos[1]]:
+                            board.game_grid[pos[0]][pos[1] + 1] = PieceColor.NONE
+                            board.game_grid[pos[0]][pos[1]] = PieceColor.NONE
+                            board.game_grid[pos[0]][pos[1] - 1] = PieceColor.NONE
+                            to_remove.append(pos)
+                            to_remove.append((pos[0], pos[1] + 1))
+                            to_remove.append((pos[0], pos[1] - 1))
+
+        set_difference = set(sorted_fixed_pos) - set(to_remove)
+        sorted_fixed_pos = list(set_difference)
+        board.fixed_positions = sorted_fixed_pos.copy()
+        
+        for n in range(len(board.fixed_positions)-1,-1,-1):
+            pos = sorted_fixed_pos[n]
+            if pos[0] + 1 < board_rows and board.game_grid[pos[0] + 1][pos[1]] == PieceColor.NONE:
+                board.game_grid[pos[0] + 1][pos[1]] = board.game_grid[pos[0]][pos[1]]
+                board.game_grid[pos[0]][pos[1]] = PieceColor.NONE
+                board.add_fixed_piece((pos[0] + 1, pos[1]))
+                board.fixed_positions.remove(pos)
+            pygame.display.update()
+
+        
 
 # Render methods
 # Draws the actual game board with the pieces
@@ -252,5 +245,9 @@ def draw_grid(board, screen):
             pygame.draw.line(screen, (128, 128, 128), s2, e2)
 
 
+def draw_main_menu_text(surface, text, size, color):
+    label = font.render(text, 1, color)
+    surface.blit(label, (top_left_x + board_width / 2 - (label.get_size() / 2), top_left_y + board_height / 2 - label.get_size() / 2))
+
 # Main methods
-gameloop()
+main_menu()

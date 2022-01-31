@@ -15,7 +15,7 @@ class Board:
 
     def update_board(self, piece):
         for y, row in enumerate(self.game_grid):
-            for x in range(len(row)):            
+            for x in range(len(row)):
                 piece_pos = (piece.pos_y, piece.pos_x)
                 if(y, x) == piece_pos:
                     self.game_grid[y][x] = piece.color
